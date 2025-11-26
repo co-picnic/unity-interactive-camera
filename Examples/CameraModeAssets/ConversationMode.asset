@@ -1,0 +1,162 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d716169d54562146b9e0435ef2e862d, type: 3}
+  m_Name: ConversationMode
+  m_EditorClassIdentifier: 
+  modeName: Conversation Mode
+  description: Camera mode for conversations
+  virtualCamera: {fileID: 6146311565628959554, guid: 3b4c5d6e7f8901abcdef123456789012,
+    type: 3}
+  cameraSettings:
+    fieldOfView: 67
+    nearClipPlane: 0.1
+    farClipPlane: 1000
+    pitchAngle: 0
+    initialGroundHeight: 3
+    useInitialGroundHeight: 0
+  followSettings:
+    followOffset: {x: -2.35, y: 1.2, z: 1.55}
+    followX: 1
+    followY: 1
+    followZ: 1
+    followSpeed: 2
+    lookAtSpeed: 2
+    useGroupFraming: 1
+    dollyDistanceMin: -20
+    dollyDistanceMax: 20
+    framingSize: 0.65
+    primaryTargetWeight: 0.942
+    secondaryTargetWeight: 0.5
+    useCustomFollowOffset: 0
+    customFollowOffset: {x: -1.8, y: 1.2, z: 1.55}
+    lockToGround: 0
+    groundLevel: 0
+  dragSettings:
+    horizontalMapsTo: 1
+    horizontalSensitivity: 2
+    invertHorizontal: 0
+    verticalMapsTo: 3
+    verticalSensitivity: 2
+    invertVertical: 0
+    damping: 5
+    enableMomentum: 1
+    momentum: 0.8
+    momentumDecay: 2
+    maxCameraSpeed: 15
+    enableBoundary: 0
+    movementDeltaMode: 0
+    dragDampingMode: 0
+  zoomSettings:
+    zoomSensitivity: 1
+    invertZoom: 0
+    minFOV: 20
+    maxFOV: 80
+    initialFOV: 60
+    enableSmoothZoom: 1
+    zoomSpeed: 3
+    allowZoomDuringDrag: 1
+    reduceDragSensitivityDuringZoom: 1
+    dragSensitivityMultiplier: 0.7
+    enableZoomBoundary: 0
+    minDistance: 2
+    maxDistance: 100
+    zoomMode: 0
+    zoomCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 1
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 1
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+  transitionSettings:
+    blendDuration: 1
+    blendDelay: 0
+    blendCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    blendCurveType: 3
+    smoothPosition: 1
+    smoothRotation: 1
+    smoothFieldOfView: 1
+    useCustomCurve: 0
+    customCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0
+        inSlope: 0
+        outSlope: 1
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 1
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    transitionPriority: 50
+    lockToGroundDuringTransition: 0
+    transitionGroundLevel: 0
+    maxTransitionSpeed: 10
+  enableFollow: 1
+  enableZoom: 0
+  enableDrag: 0
+  priority: 10
+  isEnabled: 1
+  tags: []

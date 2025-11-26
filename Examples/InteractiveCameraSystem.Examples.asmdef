@@ -1,0 +1,17 @@
+{
+    "name": "InteractiveCameraSystem.Examples",
+    "rootNamespace": "InteractiveCameraSystem.Examples",
+    "references": [
+        "InteractiveCameraSystem.Runtime",
+        "Unity.Cinemachine"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

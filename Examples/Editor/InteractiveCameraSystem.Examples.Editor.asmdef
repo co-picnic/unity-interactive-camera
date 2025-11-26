@@ -1,0 +1,21 @@
+{
+    "name": "InteractiveCameraSystem.Examples.Editor",
+    "rootNamespace": "InteractiveCameraSystem.Examples.Editor",
+    "references": [
+        "InteractiveCameraSystem.Examples",
+        "InteractiveCameraSystem.Runtime",
+        "InteractiveCameraSystem.Integrations",
+        "Unity.Cinemachine"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

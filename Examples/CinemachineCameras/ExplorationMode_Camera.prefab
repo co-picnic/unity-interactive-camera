@@ -1,0 +1,178 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3931751756588151983
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 309217914725047821}
+  - component: {fileID: 753758387250025341}
+  - component: {fileID: 443992729014232327}
+  - component: {fileID: 2668758203249356707}
+  - component: {fileID: 3421227243302392936}
+  m_Layer: 0
+  m_Name: ExplorationMode_Camera
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &309217914725047821
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3931751756588151983}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.07629479, y: 0.90533245, z: -0.18419191, w: 0.37500095}
+  m_LocalPosition: {x: -17, y: 13, z: 17}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 23, y: 135, z: 0}
+--- !u!114 &753758387250025341
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3931751756588151983}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9dfa5b682dcd46bda6128250e975f58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Priority:
+    Enabled: 1
+    m_Value: 0
+  OutputChannel: 1
+  StandbyUpdate: 2
+  m_StreamingVersion: 20241001
+  m_LegacyPriority: 0
+  Target:
+    TrackingTarget: {fileID: 0}
+    LookAtTarget: {fileID: 0}
+    CustomLookAtTarget: 0
+  Lens:
+    FieldOfView: 62.097816
+    OrthographicSize: 10
+    NearClipPlane: 0.1
+    FarClipPlane: 1000
+    Dutch: 0
+    ModeOverride: 0
+    PhysicalProperties:
+      GateFit: 2
+      SensorSize: {x: 21.946, y: 16.002}
+      LensShift: {x: 0, y: 0}
+      FocusDistance: 10
+      Iso: 200
+      ShutterSpeed: 0.005
+      Aperture: 16
+      BladeCount: 5
+      Curvature: {x: 2, y: 11}
+      BarrelClipping: 0.25
+      Anamorphism: 0
+  BlendHint: 0
+--- !u!114 &443992729014232327
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3931751756588151983}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d4a951e55b48ab449d3e241e063c06b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  virtualCameraBounds: {fileID: 0}
+  horizontalMapsTo: 1
+  horizontalSensitivity: 2
+  invertHorizontal: 1
+  verticalMapsTo: 3
+  verticalSensitivity: 2
+  invertVertical: 0
+  damping: 5
+  enableMomentum: 1
+  momentum: 0.8
+  momentumDecay: 2
+  maxCameraSpeed: 15
+  enableBoundary: 0
+  movementDeltaMode: 0
+  dragDampingMode: 0
+  debugMode: 0
+  enableKeyboardControls: 1
+  keyboardSpeedMultiplier: 1
+  shiftSpeedMultiplier: 2
+  keyboardRotationSpeed: 30
+  debugKeyboardInput: 0
+--- !u!114 &2668758203249356707
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3931751756588151983}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5da09298ecd239b439034c26ac367bc6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  zoomSensitivity: 1
+  invertZoom: 0
+  minFOV: 20
+  maxFOV: 80
+  enableSmoothZoom: 1
+  zoomSpeed: 3
+  allowZoomDuringDrag: 1
+  reduceDragSensitivityDuringZoom: 1
+  dragSensitivityMultiplier: 0.7
+  enableZoomBoundary: 0
+  minDistance: 2
+  maxDistance: 100
+  zoomMode: 0
+  zoomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 1
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 1
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  debugMode: 0
+--- !u!114 &3421227243302392936
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3931751756588151983}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c8e5f9a2d7b4e1c9a6f3d8e2b5c7a4f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  modeId: ExplorationMode_Camera
+  displayName: ExplorationMode_Camera
+  autoSetFromName: 1

@@ -1,0 +1,67 @@
+node_modules
+.DS_Store
+.vscode/settings.json
+
+# Unity Test Runner temp scenes
+InitTestScene*.unity
+InitTestScene*.unity.meta
+/flutter/
+
+# Claude
+/.claude
+/*/*/.claude
+*/*/CLAUDE.md
+apps/rising-tides-app/.claude/settings.local.json
+*/*/.claude/settings.local.json
+CLAUDE.md
+
+# Anima Engine build outputs
+anima/engine/*/dist/
+
+# Environment files (ignore everywhere, but keep examples)
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
+!env.example
+!**/env.example
+
+# Jetbrains
+.idea
+
+# Visual Studio
+.vsconfig
+
+# Unity generated files
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+sysinfo.txt
+*.apk
+*.aab
+*.unitypackage
+*.app
+crashlytics-build.properties
