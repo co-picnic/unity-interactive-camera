@@ -10,7 +10,7 @@ namespace InteractiveCameraSystem
     public class CameraSettings
     {
         [Header("Projection")]
-        [Tooltip("Field of view in degrees")]
+        [Tooltip("Horizontal field of view in degrees")]
         [Range(1f, 179f)]
         public float fieldOfView = 60f;
         

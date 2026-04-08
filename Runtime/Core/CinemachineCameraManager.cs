@@ -12,6 +12,13 @@ namespace InteractiveCameraSystem
     /// Simplified Cinemachine-based camera management system.
     /// Replaces the complex behavior-based system with direct Cinemachine integration.
     /// </summary>
+    [System.Serializable]
+    public class ModeTargetGroupMapping
+    {
+        public CameraMode mode;
+        public CinemachineTargetGroup targetGroup;
+    }
+
     public class CinemachineCameraManager : MonoBehaviour
     {
         private static CinemachineCameraManager _instance;
@@ -63,8 +70,8 @@ namespace InteractiveCameraSystem
         [Tooltip("Cinemachine Brain component")]
         [SerializeField] private CinemachineBrain brain;
         
-        [Tooltip("Cinemachine Target Group for multi-target following")]
-        [SerializeField] private CinemachineTargetGroup targetGroup;
+        [Tooltip("Per-mode target group mappings. Each camera mode gets its own CinemachineTargetGroup.")]
+        [SerializeField] private List<ModeTargetGroupMapping> modeTargetGroups = new List<ModeTargetGroupMapping>();
         
         [Header("Debug")]
         [Tooltip("Enable debug logging")]
@@ -88,6 +95,7 @@ namespace InteractiveCameraSystem
         private bool isTransitioning = false;
         private CinemachineInputManager inputManager;
         private Dictionary<Transform, float> targetRadii = new Dictionary<Transform, float>();
+        private CameraMode previousMode;
         
         // Events
         public System.Action<CameraMode> OnModeChanged;
@@ -106,7 +114,20 @@ namespace InteractiveCameraSystem
         
         public CinemachineBrain Brain => brain;
         
-        public CinemachineTargetGroup TargetGroup => targetGroup;
+        public CinemachineTargetGroup TargetGroup => GetTargetGroupForMode(currentMode);
+
+        private CinemachineTargetGroup GetTargetGroupForMode(CameraMode mode)
+        {
+            if (mode != null)
+            {
+                foreach (var mapping in modeTargetGroups)
+                {
+                    if (mapping != null && mapping.mode == mode && mapping.targetGroup != null)
+                        return mapping.targetGroup;
+                }
+            }
+            return modeTargetGroups.Count > 0 && modeTargetGroups[0] != null ? modeTargetGroups[0].targetGroup : null;
+        }
         
         public CinemachineCamera ActiveCamera => activeCamera;
         
@@ -468,7 +489,7 @@ namespace InteractiveCameraSystem
             {
                 ApplyModeSettings(currentMode);
                 UpdateCameraComponents(currentMode);
-                UpdateTargetsForMode(currentMode);
+                RebuildTargetsForMode(currentMode);
             }
             else
             {
@@ -508,7 +529,7 @@ namespace InteractiveCameraSystem
         
         private void DebugStartupState()
         {
-            Debug.Log($"[CinemachineCameraManager] Brain: {(brain != null ? "Found" : "Missing")}, TargetGroup: {(targetGroup != null ? "Found" : "Missing")}");
+            Debug.Log($"[CinemachineCameraManager] Brain: {(brain != null ? "Found" : "Missing")}, ModeTargetGroups: {modeTargetGroups.Count}");
             Debug.Log($"[CinemachineCameraManager] Built mode lookup with {cameraModes.Count} modes");
         }
         
@@ -608,18 +629,21 @@ namespace InteractiveCameraSystem
                 
                 ApplyModeSettings(mode);
                 UpdateCameraComponents(mode);
-                UpdateTargetsForMode(mode);
+                RebuildTargetsForMode(mode);
                 
                 return true;
             }
             
-            var previousMode = currentMode;
+            previousMode = currentMode;
             currentMode = mode;
+            
+            if (mode.transitionSettings != null)
+                ApplyTransitionSettings(mode.transitionSettings);
             
             SwitchCinemachineCamera(mode, smoothTransition);
             ApplyModeSettings(mode);
             UpdateCameraComponents(mode);
-            UpdateTargetsForMode(mode);
+            RebuildTargetsForMode(mode);
             
             if (debugMode)
             {
@@ -723,52 +747,49 @@ namespace InteractiveCameraSystem
         public void SetTargets(List<Transform> targets, float? radius)
         {
             if (targets == null)
-            {
                 targets = new List<Transform>();
-            }
             
             var validTargets = targets.Where(t => t != null).ToList();
+            var targetGroup = GetTargetGroupForMode(currentMode);
             
             activeTargets.Clear();
             activeTargets.AddRange(validTargets);
             
-            // Update stored radii
-            // Remove old targets that are no longer in the list
             var targetsToRemove = targetRadii.Keys.Where(t => !activeTargets.Contains(t)).ToList();
             foreach (var oldTarget in targetsToRemove)
-            {
                 targetRadii.Remove(oldTarget);
-            }
             
-            // Set radius for all new targets
-            if (radius.HasValue)
+            float defaultRadius = currentMode?.followSettings?.targetRadius ?? 1f;
+            foreach (var target in validTargets)
             {
-                // Override radius for all targets
-                foreach (var target in validTargets)
-                {
+                if (radius.HasValue)
                     targetRadii[target] = radius.Value;
-                }
-            }
-            else
-            {
-                // Set default radius for targets that don't have one
-                float defaultRadius = currentMode?.followSettings?.targetRadius ?? 1f;
-                foreach (var target in validTargets)
-                {
-                    if (!targetRadii.ContainsKey(target))
-                    {
-                        targetRadii[target] = defaultRadius;
-                    }
-                }
+                else if (!targetRadii.ContainsKey(target))
+                    targetRadii[target] = defaultRadius;
             }
             
-            UpdateCinemachineTargets();
+            if (targetGroup != null)
+            {
+                targetGroup.Targets.Clear();
+                foreach (var target in validTargets)
+                {
+                    targetGroup.Targets.Add(new CinemachineTargetGroup.Target
+                    {
+                        Object = target,
+                        Weight = 1f,
+                        Radius = targetRadii.ContainsKey(target) ? targetRadii[target] : defaultRadius
+                    });
+                }
+                targetGroup.RotationMode = CinemachineTargetGroup.RotationModes.GroupAverage;
+            }
+            
+            UpdateTrackingTarget();
             
             if (debugMode)
             {
                 string targetNames = string.Join(", ", validTargets.Select(t => t.name));
                 string radiusInfo = radius.HasValue ? $" with radius {radius.Value}" : "";
-                Debug.Log($"[CinemachineCameraManager] Set targets: [{targetNames}]{radiusInfo}");
+                Debug.Log($"[CinemachineCameraManager] Set targets on {currentMode?.modeName ?? "null"}: [{targetNames}]{radiusInfo}");
             }
             
             OnTargetsChanged?.Invoke(activeTargets);
@@ -787,23 +808,29 @@ namespace InteractiveCameraSystem
             {
                 activeTargets.Add(target);
                 
-                // Store the radius for this target if provided
                 if (radius.HasValue)
-                {
                     targetRadii[target] = radius.Value;
-                }
                 else if (!targetRadii.ContainsKey(target))
-                {
-                    // Store default radius from mode or fallback
                     targetRadii[target] = currentMode?.followSettings?.targetRadius ?? 1f;
+                
+                var targetGroup = GetTargetGroupForMode(currentMode);
+                if (targetGroup != null)
+                {
+                    float r = targetRadii.ContainsKey(target) ? targetRadii[target] : 1f;
+                    targetGroup.Targets.Add(new CinemachineTargetGroup.Target
+                    {
+                        Object = target,
+                        Weight = 1f,
+                        Radius = r
+                    });
                 }
                 
-                UpdateCinemachineTargets();
+                UpdateTrackingTarget();
                 
                 if (debugMode)
                 {
                     float actualRadius = targetRadii.ContainsKey(target) ? targetRadii[target] : 1f;
-                    Debug.Log($"[CinemachineCameraManager] Added target: {target.name} with radius {actualRadius:F2}");
+                    Debug.Log($"[CinemachineCameraManager] Added target to {currentMode?.modeName ?? "null"}: {target.name} with radius {actualRadius:F2}");
                 }
                 
                 OnTargetsChanged?.Invoke(activeTargets);
@@ -816,15 +843,25 @@ namespace InteractiveCameraSystem
             
             if (activeTargets.Remove(target))
             {
-                // Clean up stored radius
                 targetRadii.Remove(target);
                 
-                UpdateCinemachineTargets();
+                var targetGroup = GetTargetGroupForMode(currentMode);
+                if (targetGroup != null)
+                {
+                    for (int i = targetGroup.Targets.Count - 1; i >= 0; i--)
+                    {
+                        if (targetGroup.Targets[i].Object as Transform == target)
+                        {
+                            targetGroup.Targets.RemoveAt(i);
+                            break;
+                        }
+                    }
+                }
+                
+                UpdateTrackingTarget();
                 
                 if (debugMode)
-                {
-                    Debug.Log($"[CinemachineCameraManager] Removed target: {target.name}");
-                }
+                    Debug.Log($"[CinemachineCameraManager] Removed target from {currentMode?.modeName ?? "null"}: {target.name}");
                 
                 OnTargetsChanged?.Invoke(activeTargets);
             }
@@ -834,12 +871,13 @@ namespace InteractiveCameraSystem
         {
             activeTargets.Clear();
             targetRadii.Clear();
-            UpdateCinemachineTargets();
+            
+            var targetGroup = GetTargetGroupForMode(currentMode);
+            if (targetGroup != null)
+                targetGroup.Targets.Clear();
             
             if (debugMode)
-            {
-                Debug.Log("[CinemachineCameraManager] Cleared all targets");
-            }
+                Debug.Log($"[CinemachineCameraManager] Cleared all targets on {currentMode?.modeName ?? "null"}");
             
             OnTargetsChanged?.Invoke(activeTargets);
         }
@@ -1127,45 +1165,36 @@ namespace InteractiveCameraSystem
             {
                 Debug.Log($"[CinemachineCameraManager] Ensured default camera '{defaultCamera.name}' is active");
             }
-        }
-        
-        private void ManageCameraStates(CinemachineCamera activeCamera)
-        {
-            if (activeCamera == null) return;
             
             var allCameras = FindObjectsOfType<CinemachineCamera>(true);
-            
-            foreach (var camera in allCameras)
+            foreach (var cam in allCameras)
             {
-                if (camera == null) continue;
-                
-                if (camera == activeCamera)
+                if (cam != null && !cam.gameObject.activeInHierarchy)
                 {
-                    if (!camera.gameObject.activeInHierarchy)
-                    {
-                        camera.gameObject.SetActive(true);
-                    }
-                    
-                    if (debugMode)
-                    {
-                        Debug.Log($"[CinemachineCameraManager] Enabled active camera '{camera.name}'");
-                    }
-                }
-                else
-                {
-                    // Disable all other cameras when switching modes
-                    if (camera.gameObject.activeInHierarchy)
-                    {
-                        camera.gameObject.SetActive(false);
-                        
-                        if (debugMode)
-                        {
-                            Debug.Log($"[CinemachineCameraManager] Disabled camera '{camera.name}'");
-                        }
-                    }
+                    cam.gameObject.SetActive(true);
+                    cam.Priority = 0;
                 }
             }
         }
+        
+        private void ManageCameraStates(CinemachineCamera newActiveCamera)
+        {
+            if (newActiveCamera == null) return;
+
+            if (!newActiveCamera.gameObject.activeInHierarchy)
+            {
+                newActiveCamera.gameObject.SetActive(true);
+            }
+
+            var allCameras = FindObjectsOfType<CinemachineCamera>(true);
+            foreach (var camera in allCameras)
+            {
+                if (camera == null) continue;
+                camera.Priority = camera == newActiveCamera ? 10 : 0;
+            }
+        }
+
+
         
         #endregion
         
@@ -1214,6 +1243,16 @@ namespace InteractiveCameraSystem
         public CameraMode GetCurrentMode()
         {
             return currentMode;
+        }
+        
+        public bool RestorePreviousMode(bool smoothTransition = true)
+        {
+            if (previousMode == null)
+            {
+                Debug.LogWarning("[CinemachineCameraManager] No previous mode to restore.");
+                return false;
+            }
+            return SwitchToMode(previousMode, smoothTransition);
         }
         
         /// <summary>
@@ -1321,7 +1360,7 @@ namespace InteractiveCameraSystem
             {
                 cameraInstance.transform.SetParent(cameraParent);
             }
-            cameraInstance.SetActive(false);
+            cameraInstance.SetActive(true);
             
             // Get the CinemachineCamera component
             var cinemachineCamera = cameraInstance.GetComponent<CinemachineCamera>();
@@ -1344,38 +1383,30 @@ namespace InteractiveCameraSystem
 
         private void UpdateCinemachineTargets(float? overrideRadius = null)
         {
+            var targetGroup = GetTargetGroupForMode(currentMode);
             if (targetGroup == null) return;
-            
-            // Update target group with current active targets
+
             targetGroup.Targets.Clear();
-            
+
             foreach (var target in activeTargets)
             {
                 if (target != null)
                 {
-                    // Get radius for this specific target:
-                    // 1. Use override if provided (for setting all targets at once)
-                    // 2. Use stored radius for this target
-                    // 3. Use current mode's follow settings
-                    // 4. Default to 1f
                     float targetRadius = overrideRadius ?? 
-                                        (targetRadii.ContainsKey(target) ? targetRadii[target] : 
-                                        (currentMode?.followSettings?.targetRadius ?? 1f));
-                    
-                    var cinemachineTarget = new CinemachineTargetGroup.Target
+                        (targetRadii.ContainsKey(target) ? targetRadii[target] : 
+                        (currentMode?.followSettings?.targetRadius ?? 1f));
+
+                    targetGroup.Targets.Add(new CinemachineTargetGroup.Target
                     {
                         Object = target,
                         Weight = 1f,
                         Radius = targetRadius
-                    };
-                    targetGroup.Targets.Add(cinemachineTarget);
+                    });
                 }
             }
-            
+
             targetGroup.RotationMode = CinemachineTargetGroup.RotationModes.GroupAverage;
-            
-            // Update TrackingTarget on the active camera if it exists
-            // If activeCamera is null (e.g., during initialization), we'll update it later when the camera is set
+
             if (activeCamera != null)
             {
                 UpdateTrackingTarget();
@@ -1401,10 +1432,9 @@ namespace InteractiveCameraSystem
         /// </summary>
         private void UpdateTrackingTarget()
         {
+            var targetGroup = GetTargetGroupForMode(currentMode);
             if (activeCamera == null || targetGroup == null) return;
             
-            // Set TrackingTarget to targetGroup if we have targets AND the current mode has follow enabled
-            // This ensures the camera follows the target group when appropriate
             if (activeTargets.Count > 0 && currentMode != null && currentMode.enableFollow)
             {
                 activeCamera.Target.TrackingTarget = targetGroup.transform;
@@ -1472,7 +1502,9 @@ namespace InteractiveCameraSystem
             try
             {
                 var lensSettings = activeCamera.Lens;
-                lensSettings.FieldOfView = settings.fieldOfView;
+                
+                float aspect = Camera.main != null ? Camera.main.aspect : 16f / 9f;
+                lensSettings.FieldOfView = Camera.HorizontalToVerticalFieldOfView(settings.fieldOfView, aspect);
                 lensSettings.NearClipPlane = settings.nearClipPlane;
                 lensSettings.FarClipPlane = settings.farClipPlane;
                 activeCamera.Lens = lensSettings;
@@ -1579,6 +1611,7 @@ namespace InteractiveCameraSystem
                 }
             }
             
+            var targetGroup = GetTargetGroupForMode(currentMode);
             if (targetGroup != null && activeTargets.Count > 1)
             {
                 ApplyTargetGroupSettings(settings);
@@ -1587,12 +1620,14 @@ namespace InteractiveCameraSystem
         
         private void ApplyTargetGroupSettings(FollowSettings settings)
         {
+            var targetGroup = GetTargetGroupForMode(currentMode);
             if (targetGroup == null) return;
             
             for (int i = 0; i < targetGroup.Targets.Count && i < activeTargets.Count; i++)
             {
                 var target = targetGroup.Targets[i];
                 target.Weight = settings.GetTargetWeight(i);
+                targetGroup.Targets[i] = target;
             }
             
             if (debugMode)
@@ -1603,20 +1638,44 @@ namespace InteractiveCameraSystem
         
         private void ApplyTransitionSettings(TransitionSettings settings)
         {
-            if (activeCamera == null) return;
+            if (brain == null) return;
             
-            if (brain != null)
-            {
-                if (debugMode)
-                {
-                    Debug.Log($"[CinemachineCameraManager] Applied transition settings: Duration={settings.blendDuration}");
-                }
-            }
+            var blend = new CinemachineBlendDefinition(settings.blendStyle, settings.blendDuration);
+            
+            if (settings.blendStyle == CinemachineBlendDefinition.Styles.Custom)
+                blend.CustomCurve = settings.customCurve;
+
+            brain.DefaultBlend = blend;
+            
+            if (debugMode)
+                Debug.Log($"[CinemachineCameraManager] Applied transition: Style={settings.blendStyle}, Duration={settings.blendDuration}");
         }
         
-        private void UpdateTargetsForMode(CameraMode mode)
+        private void RebuildTargetsForMode(CameraMode mode)
         {
-            UpdateCinemachineTargets();
+            if (mode == null) return;
+
+            var targetGroup = GetTargetGroupForMode(mode);
+            if (targetGroup == null) return;
+
+            if (mode.autoPopulateTargets && targetGroup.Targets.Count == 0)
+            {
+                activeTargets.Clear();
+                targetRadii.Clear();
+                var sceneTargets = Object.FindObjectsByType<SetCameraTarget>(FindObjectsSortMode.None);
+                foreach (var sct in sceneTargets)
+                {
+                    var t = sct.CameraTarget;
+                    if (t != null)
+                    {
+                        activeTargets.Add(t);
+                        targetRadii[t] = sct.CameraTargetRadius;
+                    }
+                }
+                UpdateCinemachineTargets();
+            }
+
+            UpdateTrackingTarget();
         }
         
         #endregion

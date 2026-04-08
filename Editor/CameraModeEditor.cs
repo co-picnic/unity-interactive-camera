@@ -31,6 +31,8 @@ namespace InteractiveCameraSystem.Editor
             EditorGUILayout.PropertyField(serializedObject.FindProperty("enableFollow"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("enableZoom"));
             EditorGUILayout.PropertyField(serializedObject.FindProperty("enableDrag"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("autoPopulateTargets"), 
+                new GUIContent("Auto Populate Targets", "Auto-populate target group from SetCameraTarget components on startup. Uncheck for modes where targets are set programmatically (e.g. conversation)."));
             
             EditorGUILayout.Space();
             
@@ -55,8 +57,33 @@ namespace InteractiveCameraSystem.Editor
                 EditorGUILayout.Space();
             }
             
-            // Always show transition settings
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("transitionSettings"), true);
+            // Transition settings — draw manually so customCurve only shows for Custom style
+            var transProp = serializedObject.FindProperty("transitionSettings");
+            EditorGUILayout.LabelField("Transition Settings", EditorStyles.boldLabel);
+            EditorGUI.indentLevel++;
+            EditorGUILayout.PropertyField(transProp.FindPropertyRelative("blendDuration"));
+            EditorGUILayout.PropertyField(transProp.FindPropertyRelative("blendDelay"));
+            EditorGUILayout.PropertyField(transProp.FindPropertyRelative("blendStyle"), new GUIContent("Blend Curve"));
+            
+            var styleProp = transProp.FindPropertyRelative("blendStyle");
+            if (styleProp.enumValueIndex == (int)Unity.Cinemachine.CinemachineBlendDefinition.Styles.Custom)
+            {
+                EditorGUILayout.PropertyField(transProp.FindPropertyRelative("customCurve"), new GUIContent("Custom Curve"));
+            }
+            
+            EditorGUILayout.Space(4);
+            EditorGUILayout.PropertyField(transProp.FindPropertyRelative("smoothPosition"));
+            EditorGUILayout.PropertyField(transProp.FindPropertyRelative("smoothRotation"));
+            EditorGUILayout.PropertyField(transProp.FindPropertyRelative("smoothFieldOfView"));
+            
+            EditorGUILayout.Space(4);
+            EditorGUILayout.PropertyField(transProp.FindPropertyRelative("lockToGroundDuringTransition"));
+            if (transProp.FindPropertyRelative("lockToGroundDuringTransition").boolValue)
+            {
+                EditorGUILayout.PropertyField(transProp.FindPropertyRelative("transitionGroundLevel"));
+            }
+            EditorGUILayout.PropertyField(transProp.FindPropertyRelative("maxTransitionSpeed"));
+            EditorGUI.indentLevel--;
             
             EditorGUILayout.Space();
             

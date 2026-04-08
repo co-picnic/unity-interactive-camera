@@ -10,6 +10,9 @@ public class SetCameraTarget : MonoBehaviour
     [SerializeField]
     private float cameraTargetRadius = 6f;
 
+    public Transform CameraTarget => cameraTarget;
+    public float CameraTargetRadius => cameraTargetRadius;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {

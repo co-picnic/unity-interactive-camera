@@ -16,7 +16,7 @@ namespace InteractiveCameraSystem.Editor
         private SerializedProperty debugModeProp;
         private SerializedProperty defaultTransitionDurationProp;
         private SerializedProperty brainProp;
-        private SerializedProperty targetGroupProp;
+        private SerializedProperty modeTargetGroupsProp;
         private SerializedProperty cameraParentProp;
         private SerializedProperty autoDiscoverCamerasProp;
         private SerializedProperty autoInstantiateMissingCamerasOnPlayProp;
@@ -32,7 +32,7 @@ namespace InteractiveCameraSystem.Editor
             debugModeProp = serializedObject.FindProperty("debugMode");
             defaultTransitionDurationProp = serializedObject.FindProperty("defaultTransitionDuration");
             brainProp = serializedObject.FindProperty("brain");
-            targetGroupProp = serializedObject.FindProperty("targetGroup");
+            modeTargetGroupsProp = serializedObject.FindProperty("modeTargetGroups");
             cameraParentProp = serializedObject.FindProperty("cameraParent");
             autoDiscoverCamerasProp = serializedObject.FindProperty("autoDiscoverCameras");
             autoInstantiateMissingCamerasOnPlayProp = serializedObject.FindProperty("autoInstantiateMissingCamerasOnPlay");
@@ -96,6 +96,23 @@ namespace InteractiveCameraSystem.Editor
                 () => ShowCameraModesContextMenu());
         }
         
+        private int FindOrCreateModeTargetGroupIndex(CameraMode mode)
+        {
+            for (int j = 0; j < modeTargetGroupsProp.arraySize; j++)
+            {
+                var entry = modeTargetGroupsProp.GetArrayElementAtIndex(j);
+                var entryMode = entry.FindPropertyRelative("mode");
+                if (entryMode.objectReferenceValue == mode)
+                    return j;
+            }
+            modeTargetGroupsProp.arraySize++;
+            int idx = modeTargetGroupsProp.arraySize - 1;
+            var newEntry = modeTargetGroupsProp.GetArrayElementAtIndex(idx);
+            newEntry.FindPropertyRelative("mode").objectReferenceValue = mode;
+            newEntry.FindPropertyRelative("targetGroup").objectReferenceValue = null;
+            return idx;
+        }
+
         private void DrawCustomModeList()
         {
             if (cameraModesProp.arraySize == 0)
@@ -104,7 +121,6 @@ namespace InteractiveCameraSystem.Editor
                 return;
             }
             
-            // Mode list
             for (int i = 0; i < cameraModesProp.arraySize; i++)
             {
                 var modeProperty = cameraModesProp.GetArrayElementAtIndex(i);
@@ -123,13 +139,12 @@ namespace InteractiveCameraSystem.Editor
                     continue;
                 }
                 
+                EditorGUILayout.BeginVertical("box");
+                
                 // Mode row
                 EditorGUILayout.BeginHorizontal();
-                
-                // Mode name
                 EditorGUILayout.LabelField(mode.modeName, EditorStyles.boldLabel);
                 
-                // Action buttons
                 if (GUILayout.Button("Switch To", GUILayout.Width(70)))
                 {
                     SwitchToMode(mode);
@@ -148,10 +163,21 @@ namespace InteractiveCameraSystem.Editor
                     {
                         cameraModesProp.DeleteArrayElementAtIndex(i);
                         i--;
+                        EditorGUILayout.EndHorizontal();
+                        EditorGUILayout.EndVertical();
+                        continue;
                     }
                 }
-                
                 EditorGUILayout.EndHorizontal();
+                
+                // Target group field inline
+                int mappingIdx = FindOrCreateModeTargetGroupIndex(mode);
+                var mappingEntry = modeTargetGroupsProp.GetArrayElementAtIndex(mappingIdx);
+                var tgProp = mappingEntry.FindPropertyRelative("targetGroup");
+                EditorGUILayout.PropertyField(tgProp, new GUIContent("Target Group"));
+                
+                EditorGUILayout.EndVertical();
+                EditorGUILayout.Space(2);
             }
         }
         
@@ -168,7 +194,6 @@ namespace InteractiveCameraSystem.Editor
             // Cinemachine Components section
             EditorGUILayout.LabelField("Cinemachine Components", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(brainProp, new GUIContent("Brain", "Cinemachine Brain component (auto-discovered if not set)"));
-            EditorGUILayout.PropertyField(targetGroupProp, new GUIContent("Target Group", "Cinemachine Target Group for multi-target following"));
             
             EditorGUILayout.Space();
             

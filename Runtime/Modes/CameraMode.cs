@@ -49,6 +49,9 @@ namespace InteractiveCameraSystem
         [Tooltip("Enable follow behavior")]
         public bool enableFollow = true;
         
+        [Tooltip("Auto-populate target group from SetCameraTarget components in the scene on startup. When false, targets are set programmatically (e.g. by the conversation system).")]
+        public bool autoPopulateTargets = true;
+        
         [Tooltip("Enable zoom behavior")]
         public bool enableZoom = true;
         

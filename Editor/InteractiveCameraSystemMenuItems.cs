@@ -40,7 +40,6 @@ namespace InteractiveCameraSystem.Editor
             cameraMode.zoomSettings.zoomSpeed = 3f;
             
             cameraMode.transitionSettings.blendDuration = 1f;
-            cameraMode.transitionSettings.transitionPriority = 50;
             
             // Create the asset
             string assetPath = AssetDatabase.GenerateUniqueAssetPath($"{folderPath}/NewCameraMode.asset");
