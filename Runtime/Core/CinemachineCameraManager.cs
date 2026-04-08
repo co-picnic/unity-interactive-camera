@@ -126,7 +126,9 @@ namespace InteractiveCameraSystem
                         return mapping.targetGroup;
                 }
             }
-            return modeTargetGroups.Count > 0 && modeTargetGroups[0] != null ? modeTargetGroups[0].targetGroup : null;
+            if (mode != null && debugMode)
+                Debug.LogWarning($"[CinemachineCameraManager] No target group mapping found for mode '{mode.modeName}'");
+            return null;
         }
         
         public CinemachineCamera ActiveCamera => activeCamera;
@@ -357,7 +359,13 @@ namespace InteractiveCameraSystem
             // Iterate through all registered modes
             foreach (var mode in cameraModes)
             {
-                // Skip disabled modes
+                if (mode == null)
+                {
+                    errorCount++;
+                    Debug.LogWarning("[CinemachineCameraManager] Auto-Instantiate: Found null mode, skipping.");
+                    continue;
+                }
+                
                 if (!mode.isEnabled)
                 {
                     excludedCount++;
@@ -365,13 +373,6 @@ namespace InteractiveCameraSystem
                     {
                         Debug.Log($"[CinemachineCameraManager] Auto-Instantiate: Skipping mode '{mode.modeName}' (disabled)");
                     }
-                    continue;
-                }
-                
-                if (mode == null)
-                {
-                    errorCount++;
-                    Debug.LogWarning("[CinemachineCameraManager] Auto-Instantiate: Found null mode, skipping.");
                     continue;
                 }
                 
@@ -1252,7 +1253,9 @@ namespace InteractiveCameraSystem
                 Debug.LogWarning("[CinemachineCameraManager] No previous mode to restore.");
                 return false;
             }
-            return SwitchToMode(previousMode, smoothTransition);
+            var target = previousMode;
+            previousMode = null;
+            return SwitchToMode(target, smoothTransition);
         }
         
         /// <summary>
@@ -1475,11 +1478,6 @@ namespace InteractiveCameraSystem
             if (mode.followSettings != null)
             {
                 ApplyFollowSettings(mode.followSettings);
-            }
-            
-            if (mode.transitionSettings != null)
-            {
-                ApplyTransitionSettings(mode.transitionSettings);
             }
         }
         
