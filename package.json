@@ -1,6 +1,6 @@
 {
   "name": "com.interactivecamera.interactivecamera-system",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "displayName": "Interactive Camera System",
   "description": "A comprehensive camera management system for Unity with Cinemachine integration, supporting multiple camera modes and touch input.",
   "unity": "2022.3",
